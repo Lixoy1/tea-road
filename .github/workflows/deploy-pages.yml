@@ -43,6 +43,19 @@ jobs:
       - name: Build
         run: npm run build
 
+      - name: Add runtime fallback
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("dist/index.html")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace(
+              '<div id="root"></div>',
+              '''<div id="root"><div id="tea-boot" style="min-height:100vh;display:grid;place-items:center;background:#07100d;color:#d8c69a;font:500 15px system-ui,sans-serif;text-align:center;padding:24px"><div><div style="font-size:30px;margin-bottom:12px">🍃</div><b style="font-size:22px">TEA ROAD</b><p style="opacity:.72">Загрузка чайного пути…</p></div></div></div>\n<script>window.addEventListener('error',function(e){var r=document.getElementById('root');if(r&&(!r.children.length||document.getElementById('tea-boot'))){r.innerHTML='<div style="min-height:100vh;display:grid;place-items:center;background:#07100d;color:#fff;padding:24px;font:15px system-ui"><div style="max-width:560px"><b style="font-size:22px">Tea Road</b><p style="opacity:.75">Не удалось запустить интерфейс. Обновите страницу. Если ошибка повторится, откройте консоль браузера и проверьте загрузку assets.</p><code style="opacity:.55">'+String(e.message||e.error||'runtime error').replace(/</g,'&lt;')+'</code></div></div>'}});</script>'''
+          )
+          p.write_text(s, encoding="utf-8")
+          PY
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
