@@ -20,19 +20,22 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Validate Tea Road v0.8 entry
+      - name: Validate Tea Road v0.9 entry
         run: |
-          test -f src/main-v08.jsx
-          test -f src/tea-road-v08.css
-          test -f public/tea-road-bg.svg
-          grep -q 'react-dom/client' src/main-v08.jsx
-          grep -q 'createRoot' src/main-v08.jsx
-          grep -q 'main-v08.jsx' index.html
-          grep -q 'localStorage' src/main-v08.jsx
-          grep -q 'setTheme' src/main-v08.jsx
-          grep -q 'setLang' src/main-v08.jsx
-          grep -q 'Lucky Spin' src/main-v08.jsx
-          ! grep -q 'Мини-игра' src/main-v08.jsx
+          test -f src/main-v09.jsx
+          test -f src/tea-road-v09.css
+          grep -q 'react-dom/client' src/main-v09.jsx
+          grep -q 'createRoot' src/main-v09.jsx
+          grep -q 'main-v09.jsx' index.html
+          grep -q 'tr-auth' src/main-v09.jsx
+          grep -q 'tr-telegram' src/main-v09.jsx
+          grep -q 'startHarvest' src/main-v09.jsx
+          grep -q 'accelerate' src/main-v09.jsx
+          grep -q 'SecurityPage' src/main-v09.jsx
+          grep -q 'SettingsPage' src/main-v09.jsx
+          grep -q 'AccountPage' src/main-v09.jsx
+          grep -q 'Lucky Spin' src/main-v09.jsx
+          grep -q 'Transaction PIN' src/main-v09.jsx
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -50,9 +53,9 @@ jobs:
           const js=fs.readdirSync('dist/assets').find(x=>x.endsWith('.js'));
           if(!js) throw new Error('No production JS bundle found');
           const bundle=fs.readFileSync('dist/assets/'+js,'utf8');
-          for(const s of ['createRoot','localStorage','Lucky Spin','Tea Road']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
+          for(const s of ['createRoot','localStorage','start harvest','Tea Road','Telegram']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
           if(bundle.includes('ReferenceError: createRoot')) throw new Error('createRoot runtime error remains');
-          console.log('Runtime smoke test passed:',js);
+          console.log('Tea Road v0.9 smoke test passed:',js);
           NODE
       - name: Add runtime fallback
         run: |
