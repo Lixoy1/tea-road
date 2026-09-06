@@ -23,6 +23,9 @@ jobs:
       - name: Validate Tea Road v1.0 files
         run: |
           test -f src/main-v10.jsx
+          test -f src/admin-v10.jsx
+          test -f src/admin-v10.css
+          test -f src/entry-v10.js
           test -f src/tea-road-v10.css
           test -f public/tea-road-bg.svg
           test -f index.html
@@ -40,11 +43,11 @@ jobs:
           const fs=require('fs');
           const html=fs.readFileSync('dist/index.html','utf8');
           if(!html.includes('/assets/')) throw new Error('Built index.html has no assets');
-          const js=fs.readdirSync('dist/assets').find(x=>x.endsWith('.js'));
-          if(!js) throw new Error('No production JS bundle found');
-          const bundle=fs.readFileSync('dist/assets/'+js,'utf8');
-          for(const s of ['createRoot','localStorage','Tea Road','Telegram','Start harvest']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
-          console.log('Tea Road v1.0 smoke test passed:',js);
+          const files=fs.readdirSync('dist/assets').filter(x=>x.endsWith('.js'));
+          if(!files.length) throw new Error('No production JS bundle found');
+          const bundle=files.map(x=>fs.readFileSync('dist/assets/'+x,'utf8')).join('\n');
+          for(const s of ['createRoot','localStorage','Tea Road','Telegram','Start harvest','ADMIN CONSOLE','Risk alerts','Lucky Spin']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
+          console.log('Tea Road v1.0 + admin smoke test passed:',files.join(', '));
           NODE
       - name: Add runtime fallback
         run: |
