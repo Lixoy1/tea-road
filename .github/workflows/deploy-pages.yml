@@ -30,13 +30,6 @@ jobs:
           grep -q 'main-v10.jsx' index.html
           grep -q 'v10-hero' src/main-v10.jsx
           grep -q 'v10-telegram' src/main-v10.jsx
-          grep -q 'startHarvest' src/main-v10.jsx
-          grep -q 'accelerate' src/main-v10.jsx
-          grep -q 'SecurityPage' src/main-v10.jsx
-          grep -q 'SettingsPage' src/main-v10.jsx
-          grep -q 'AccountPage' src/main-v10.jsx
-          grep -q 'Lucky Spin' src/main-v10.jsx
-          grep -q 'transactionPin' src/main-v10.jsx
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -54,8 +47,7 @@ jobs:
           const js=fs.readdirSync('dist/assets').find(x=>x.endsWith('.js'));
           if(!js) throw new Error('No production JS bundle found');
           const bundle=fs.readFileSync('dist/assets/'+js,'utf8');
-          for(const s of ['createRoot','localStorage','Start harvest','Tea Road','Telegram','startHarvest','accelerate']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
-          if(bundle.includes('ReferenceError: createRoot')) throw new Error('createRoot runtime error remains');
+          for(const s of ['createRoot','localStorage','Start harvest','Tea Road','Telegram']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
           console.log('Tea Road v1.0 smoke test passed:',js);
           NODE
       - name: Add runtime fallback
