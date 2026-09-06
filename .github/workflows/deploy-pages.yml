@@ -29,6 +29,8 @@ jobs:
           s = p.read_text(encoding="utf-8")
           s = s.replace("History,Home,Languages,Leaf", "History,Home as HomeIcon,Languages,Leaf")
           s = s.replace('["home","Главная",Home]', '["home","Главная",HomeIcon]')
+          if "createRoot(" in s and "from\"react-dom/client\"" not in s and "from \"react-dom/client\"" not in s:
+              s = 'import { createRoot } from "react-dom/client";\n' + s
           p.write_text(s, encoding="utf-8")
           PY
 
@@ -42,6 +44,20 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Runtime smoke test
+        run: |
+          node - <<'NODE'
+          const fs = require('fs');
+          const html = fs.readFileSync('dist/index.html', 'utf8');
+          if (!html.includes('/assets/')) throw new Error('Built index.html has no assets');
+          const js = fs.readdirSync('dist/assets').find(x => x.endsWith('.js'));
+          if (!js) throw new Error('No production JS bundle found');
+          const bundle = fs.readFileSync('dist/assets/' + js, 'utf8');
+          if (bundle.includes('createRoot') && !bundle.includes('react-dom')) throw new Error('createRoot runtime import missing');
+          if (bundle.includes('ReferenceError: createRoot')) throw new Error('createRoot ReferenceError remains in bundle');
+          console.log('Runtime smoke test passed:', js);
+          NODE
 
       - name: Add runtime fallback
         run: |
