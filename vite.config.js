@@ -1,8 +1,70 @@
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 
+function teaRoadPatch() {
+  return {
+    name: "tea-road-v10-ux-patch",
+    enforce: "pre",
+    transform(code, id) {
+      if (!id.endsWith("/src/main-v10.jsx")) return null;
+      let c = code;
+
+      c = c.replace(
+        /^import React,\{useEffect,useState\}from\"react\";$/m,
+        'import React,{useEffect,useState}from"react";\nimport { createRoot } from "react-dom/client";'
+      );
+      c = c.replace(
+        'import{ArrowDownLeft,ArrowRight,ArrowUpRight,Bell,CalendarDays,Check,Copy,Crown,Eye,EyeOff,Gift,Globe,History,Home,KeyRound,Leaf,LockKeyhole,Menu,Moon,RotateCw,Settings,ShieldCheck,SlidersHorizontal,Sun,Trophy,UserRound,Users,WalletCards,X,Zap}from"lucide-react";',
+        'import{ArrowDownLeft,ArrowRight,ArrowUpRight,Bell,CalendarDays,Check,Copy,Crown,Eye,EyeOff,Gift,Globe,History,Home,KeyRound,Leaf,LockKeyhole,Menu,Moon,RotateCw,Settings,ShieldCheck,SlidersHorizontal,Sun,Trophy,UserRound,Users,WalletCards,X,Zap,ChevronRight}from"lucide-react";'
+      );
+
+      const settings = `function SettingsPage({p}){const t=p.t,[open,setOpen]=useState(p.notifications);return <Shell p={p} current="account"><SectionTitle eyebrow="TEA ROAD" title={t.settings}/><div className="v10-setting-group"><div className="setting-caption">GENERAL</div><button><span><Globe/></span><div><b>{t.language}</b><small>{p.lang}</small></div><span className="setting-end">{["RU","EN","CN"].map(x=><i className={p.lang===x?"on":""} key={x} onClick={e=>{e.stopPropagation();p.setLang(x)}}>{x}</i>)}</span></button><button onClick={()=>p.setTheme(p.theme==="dark"?"light":"dark")}><span>{p.theme==="dark"?<Moon/>:<Sun/>}</span><div><b>{t.theme}</b><small>{p.theme==="dark"?t.dark:t.light}</small></div><ChevronRight/></button><button onClick={()=>{const next=!open;setOpen(next);p.setNotifications(next);p.toastMsg(next?"Уведомления включены":"Уведомления выключены")}}><span><Bell/></span><div><b>{t.notifications}</b><small>{open?"Включены · сбор, безопасность, аккаунт":"Выключены · push-уведомления не приходят"}</small></div><span style={{marginLeft:"auto",display:"inline-flex",alignItems:"center",justifyContent:"center",width:38,height:22,borderRadius:999,background:open?"var(--gold)":"rgba(255,255,255,.08)",border:"1px solid rgba(255,255,255,.12)",padding:2}}><span style={{width:16,height:16,borderRadius:"50%",background:open?"#17372c":"#89918a",transform:open?"translateX(14px)":"translateX(0)",transition:"transform .2s"}}/></span></button></div><div className="v10-setting-group"><div className="setting-caption">ACCOUNT</div><button onClick={()=>p.nav("account-edit")}><span><UserRound/></span><div><b>{t.profile}</b><small>{p.name} · @{p.username}</small></div><ChevronRight/></button><button onClick={()=>p.nav("security")}><span><ShieldCheck/></span><div><b>{t.security}</b><small>{t.securityStatus}</small></div><ChevronRight/></button></div><div className="v10-setting-group"><div className="setting-caption">DOCUMENTS</div><button onClick={()=>p.nav("terms")}><span><KeyRound/></span><div><b>{t.terms}</b><small>Tea Road</small></div><ChevronRight/></button><button onClick={()=>p.nav("privacy")}><span><LockKeyhole/></span><div><b>{t.privacy}</b><small>Tea Road</small></div><ChevronRight/></button><button onClick={()=>p.nav("legal")}><span><ShieldCheck/></span><div><b>{t.legal}</b><small>Tea Road</small></div><ChevronRight/></button></div></Shell>}`;
+      c = c.replace(/function SettingsPage\(\{p\}\)\{[\s\S]*?\nfunction SecurityPage/, settings + "\nfunction SecurityPage");
+
+      const security = `function SecurityPage({p}){const t=p.t;const[toggle,setToggle]=useState(p.twofa);return <Shell p={p} current="account"><SectionTitle eyebrow="ACCOUNT PROTECTION" title={t.security}/><div className="security-hero"><ShieldCheck size={31}/><div><b>{toggle?t.securityStatus:"Защита требует настройки"}</b><span>Telegram подтверждает личность. PIN отдельно подтверждает выводы и чувствительные операции.</span></div><i/></div><div className="v10-security-list"><div><span><LockKeyhole/></span><div><b>{t.transactionPin}</b><small>6 цифр · используется при выводе и важных операциях</small></div><button onClick={()=>p.toastMsg("Демо: откроется форма смены PIN")}>{t.change}</button></div><div><span><ShieldCheck/></span><div><b>{t.twofa}</b><small>{toggle?"ВКЛ · второй шаг защиты при входе":"ВЫКЛ · включи, чтобы добавить второй шаг при входе"}</small></div><button onClick={()=>{const next=!toggle;setToggle(next);p.setTwofa(next);p.toastMsg(next?"2FA включена":"2FA выключена")}}>{toggle?"Выключить":"Включить"}</button></div><div><span><History/></span><div><b>{t.sessions}</b><small>Chrome · Windows · текущая сессия</small></div><button onClick={()=>p.toastMsg("Демо: сессия отмечена как доверенная")}>View</button></div><div><span><CalendarDays/></span><div><b>{t.lastLogin}</b><small>Сегодня · 18:42</small></div><button onClick={()=>p.toastMsg("Демо: детали входа")}>View</button></div></div><div className="security-tip"><LockKeyhole size={16}/><span><b>Как это работает:</b> Telegram вход + отдельный 6-значный PIN для операций. 2FA добавляет ещё один шаг при входе.</span></div></Shell>}`;
+      c = c.replace(/function SecurityPage\(\{p\}\)\{[\s\S]*?\nfunction WalletPage/, security + "\nfunction WalletPage");
+
+      const spin = `function SpinPage({p}){const t=p.t;return <Shell p={p} current="home"><SectionTitle eyebrow="TEA POINTS · ADMIN REWARDS" title={t.spin}/><section className="v10-spin"><div className="wheel" style={{transform:\`rotate(\${p.spinAngle}deg)\`}}><div className="wheel-slice s1">1 TP</div><div className="wheel-slice s2">3 TP</div><div className="wheel-slice s3">5 TP</div><div className="wheel-slice s4">10 TP</div><div className="wheel-slice s5">2× TP</div><div className="wheel-slice s6">3 TP</div><div className="wheel-center"><Leaf size={25}/><small>TEA</small></div></div><div className="wheel-pointer"/><div className="spin-meta"><span><b>{p.spins}</b> {t.spins} available</span>{p.spinResult&&<b>{t.result}: {p.spinResult}</b>}<small style={{display:"block",marginTop:8,color:"var(--muted)"}}>Прокруты начисляет только администратор. У пользователя нет автопополнения.</small></div><button className="v10-gold" onClick={p.spin} disabled={p.spinning||p.spins<1}><RotateCw size={17}/>{p.spins<1?"Нет доступных прокрутов":t.spinNow}</button></section></Shell>}`;
+      c = c.replace(/function SpinPage\(\{p\}\)\{[\s\S]*?\nfunction RatingPage/, spin + "\nfunction RatingPage");
+
+      const harvest = `function HarvestPage({p}){const t=p.t,pl=p.plan;return <Shell p={p} current="harvest"><Demo/><SectionTitle eyebrow="JADE VALLEY · YUNNAN" title="Harvest center"/><section className="v10-harvest"><div className="farm-art"><div className="farm-sun"/><div className="farm-ridge a"/><div className="farm-ridge b"/><div className="farm-ridge c"/><div className="farm-path"/><div className="farm-label"><span>OOLONG ESTATE</span><b>JADE VALLEY</b><small>YUNNAN · CHINA</small></div><div className="farm-badge">VIP {pl.id}</div></div><div className="harvest-panel"><div className="harvest-header"><div><div className="v10-status"><i/>{p.harvestRunning?t.active:"PLANTATION READY"}</div><h3>{pl.name}</h3><p>{money(pl.amount)} · {pl.rate}% / day · {pl.days} days</p></div><div className="harvest-amount">+{money(pl.amount*pl.rate/100)}<small>{t.dailyIncome}</small></div></div><div className="timer-wrap"><div className="timer-ring"><svg viewBox="0 0 160 160"><circle cx="80" cy="80" r="67"/><circle className="timer-progress" cx="80" cy="80" r="67" pathLength="100" style={{strokeDashoffset:100-p.progress}}/></svg><div className="timer-center"><small>{p.harvestRunning?t.nextHarvest:"HARVEST WINDOW"}</small><strong>{p.harvestRunning?fmt(p.remaining):"04:00:00"}</strong><span>{Math.round(p.progress)}%</span></div></div></div><div className="harvest-controls">{!p.harvestRunning&&p.remaining>0&&<button className="v10-gold v10-wide" onClick={p.startHarvest}><Leaf size={17}/>{t.start}</button>}{p.harvestRunning&&<button className="v10-gold v10-wide" onClick={p.openAccelerate}><Zap size={17}/>{t.accelerate} · 5 USDT</button>}{!p.harvestRunning&&p.remaining===0&&<button className="v10-outline v10-wide" onClick={p.claim}>{t.claim}<ArrowRight size={17}/></button>}</div>{p.harvestRunning&&<div style={{marginTop:10,textAlign:"center",fontSize:11,color:"var(--muted)"}}>Платное ускорение доступно каждому активному участнику. Завершает таймер сразу.</div>}<div className="harvest-facts"><div><span>{t.cycle}</span><b>{pl.days} days</b></div><div><span>Daily</span><b>{money(pl.amount*pl.rate/100)}</b></div><div><span>Tea Points</span><b>{p.points}</b></div></div></div></section></Shell>}`;
+      c = c.replace(/function HarvestPage\(\{p\}\)\{[\s\S]*?\nfunction TeamPage/, harvest + "\nfunction TeamPage");
+
+      const accelerateModal = `function AccelerateModal({p}){return <div className="v10-modal"><div className="v10-dialog"><button className="v10-close" onClick={p.closeModal}><X/></button><span>HARVEST BOOST</span><h2>Ускорить сбор</h2><div className="purchase-summary"><div><span>Эффект</span><b>Завершить сейчас</b></div><div><span>Стоимость</span><b>5 USDT</b></div><div><span>Доступ</span><b>Для активного сбора</b></div></div><p style={{color:"var(--muted)",lineHeight:1.6,fontSize:13}}>Опция доступна каждому участнику, пока сбор активен. После подтверждения таймер станет <b style={{color:"var(--text)"}}>00:00:00</b> и урожай можно будет забрать.</p><small className="muted">DEMO: оплата не списывается, реальные средства отключены.</small><button className="v10-gold v10-wide" onClick={p.accelerateNow}>Оплатить 5 USDT и завершить <Zap size={16}/></button></div></div>}`;
+      c = c.replace(/function PurchaseModal/, accelerateModal + "\nfunction PurchaseModal");
+
+      c = c.replace(
+        'function App(){const[theme,setTheme]=useLS("tea10-theme","dark"),[lang,setLang]=useLS("tea10-lang","RU"),[auth,setAuth]=useLS("tea10-auth",null),[page,setPage]=useState("home"),[menu,setMenu]=useState(false),[toast,setToast]=useState(""),[twofa,setTwofa]=useLS("tea10-2fa",false),[plan,setPlan]=useLS("tea10-plan",PLANS[2]),[harvestRunning,setHarvestRunning]=useLS("tea10-harvest",false),[remaining,setRemaining]=useLS("tea10-remaining",14400),[points,setPoints]=useLS("tea10-points",72),[streak,setStreak]=useLS("tea10-streak",5),[lastCheck,setLastCheck]=useLS("tea10-lastcheck",""),[spins,setSpins]=useLS("tea10-spins",3),[spinAngle,setSpinAngle]=useLS("tea10-angle",0),[spinResult,setSpinResult]=useState(""),[spinning,setSpinning]=useState(false),[modal,setModal]=useState(null),[flow,setFlow]=useState(null),[purchase,setPurchase]=useState(null),[name,setName]=useLS("tea10-name","Василий"),[username,setUsername]=useLS("tea10-username","optimist");',
+        'function App(){const[theme,setTheme]=useLS("tea10-theme","dark"),[lang,setLang]=useLS("tea10-lang","RU"),[auth,setAuth]=useLS("tea10-auth",null),[page,setPage]=useState("home"),[menu,setMenu]=useState(false),[toast,setToast]=useState(""),[twofa,setTwofa]=useLS("tea10-2fa",false),[notifications,setNotifications]=useLS("tea10-notifications",true),[plan,setPlan]=useLS("tea10-plan",PLANS[2]),[harvestRunning,setHarvestRunning]=useLS("tea10-harvest",false),[remaining,setRemaining]=useLS("tea10-remaining",14400),[points,setPoints]=useLS("tea10-points",72),[streak,setStreak]=useLS("tea10-streak",5),[lastCheck,setLastCheck]=useLS("tea10-lastcheck",""),[spins,setSpins]=useLS("tea10-spins",0),[spinAngle,setSpinAngle]=useLS("tea10-angle",0),[spinResult,setSpinResult]=useState(""),[spinning,setSpinning]=useState(false),[modal,setModal]=useState(null),[flow,setFlow]=useState(null),[purchase,setPurchase]=useState(null),[name,setName]=useLS("tea10-name","Василий"),[username,setUsername]=useLS("tea10-username","optimist");'
+      );
+
+      c = c.replace(
+        'accelerate=()=>{if(!harvestRunning)return;setRemaining(x=>Math.max(60,x-1800));toastMsg("Сбор ускорен на 30 минут")}',
+        'accelerate=()=>{if(!harvestRunning)return;setRemaining(0);setHarvestRunning(false);toastMsg("Сбор завершён · ускорение применено")}'
+      );
+
+      c = c.replace(
+        'openFlow=x=>{setFlow(x);setModal("flow")},closeModal=()=>{setModal(null);setFlow(null);setPurchase(null)};',
+        'openFlow=x=>{setFlow(x);setModal("flow")},openAccelerate=()=>{if(harvestRunning){setModal("accelerate")}},closeModal=()=>{setModal(null);setFlow(null);setPurchase(null)},accelerateNow=()=>{closeModal();accelerate()};'
+      );
+
+      c = c.replace(
+        'const p={t:I18N[lang],lang,setLang,theme,setTheme,nav:setPage,toast,toastMsg,menu,setMenu,closeMenu:()=>setMenu(false),plan,setPlan,harvestRunning,setHarvestRunning,remaining,setRemaining,progress,points,streak,checkedToday,spins,spinAngle,spinning,spinResult,startHarvest,accelerate,claim,checkin,spin,twofa,setTwofa,name,username,setName,setUsername,openFlow,flow,purchase,openPurchase:x=>{setPurchase(x);setModal("purchase")},closeModal,activatePlan:x=>{setPlan(x);toastMsg(`VIP ${x.id} activated · demo`)},logout:()=>setAuth(null)};',
+        'const p={t:I18N[lang],lang,setLang,theme,setTheme,nav:setPage,toast,toastMsg,menu,setMenu,closeMenu:()=>setMenu(false),plan,setPlan,harvestRunning,setHarvestRunning,remaining,setRemaining,progress,points,streak,checkedToday,spins,spinAngle,spinning,spinResult,startHarvest,accelerate,openAccelerate,accelerateNow,claim,checkin,spin,twofa,setTwofa,notifications,setNotifications,name,username,setName,setUsername,openFlow,flow,purchase,openPurchase:x=>{setPurchase(x);setModal("purchase")},closeModal,activatePlan:x=>{setPlan(x);toastMsg(`VIP ${x.id} activated · demo`)},logout:()=>setAuth(null)};'
+      );
+
+      c = c.replace(
+        'return <>{view}{modal==="flow"&&<FlowModal p={p}/>} {modal==="purchase"&&<PurchaseModal p={p}/>}</>}',
+        'return <>{view}{modal==="flow"&&<FlowModal p={p}/>} {modal==="purchase"&&<PurchaseModal p={p}/>} {modal==="accelerate"&&<AccelerateModal p={p}/>}</>}'
+      );
+
+      return { code: c, map: null };
+    }
+  };
+}
+
 export default defineConfig({
-  plugins: [react()],
+  plugins: [teaRoadPatch(), react()],
   base: "/tea-road/",
   server: { port: 5173 }
 });
