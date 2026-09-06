@@ -20,49 +20,29 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-
-      - name: Validate Tea Road v0.7 entry
+      - name: Validate Tea Road v0.8 entry
         run: |
-          test -f src/main-v07.jsx
-          test -f src/tea-road-v07.css
+          test -f src/main-v08.jsx
+          test -f src/tea-road-v08.css
           test -f public/tea-road-bg.svg
-          grep -q 'react-dom/client' src/main-v07.jsx
-          grep -q 'createRoot' src/main-v07.jsx
-          grep -q 'main-v07.jsx' index.html
-          grep -q 'navigator.clipboard' src/main-v07.jsx
-          grep -q 'Telegram username' src/main-v07.jsx
-          grep -q '7-DAY HARVEST STREAK' src/main-v07.jsx
-          grep -q 'terms' src/main-v07.jsx
-          grep -q 'privacy' src/main-v07.jsx
-          grep -q 'license' src/main-v07.jsx
-          ! grep -q 'Мини-игра' src/main-v07.jsx
-          echo "Tea Road v0.7 validation passed"
-
-      - name: Apply legacy build compatibility fixes
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          p = Path("src/main.jsx")
-          s = p.read_text(encoding="utf-8")
-          s = s.replace("History,Home,Languages,Leaf", "History,Home as HomeIcon,Languages,Leaf")
-          s = s.replace('["home","Главная",Home]', '["home","Главная",HomeIcon]')
-          if "createRoot(" in s and "from\"react-dom/client\"" not in s and "from \"react-dom/client\"" not in s:
-              s = 'import { createRoot } from "react-dom/client";\n' + s
-          p.write_text(s, encoding="utf-8")
-          PY
-
+          grep -q 'react-dom/client' src/main-v08.jsx
+          grep -q 'createRoot' src/main-v08.jsx
+          grep -q 'main-v08.jsx' index.html
+          grep -q 'localStorage' src/main-v08.jsx
+          grep -q 'setTheme' src/main-v08.jsx
+          grep -q 'setLang' src/main-v08.jsx
+          grep -q 'Lucky Spin' src/main-v08.jsx
+          ! grep -q 'Мини-игра' src/main-v08.jsx
+          echo "Tea Road v0.8 validation passed"
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
           node-version: 20
           cache: npm
-
       - name: Install dependencies
         run: npm install
-
       - name: Build
         run: npm run build
-
       - name: Runtime smoke test
         run: |
           node - <<'NODE'
@@ -72,28 +52,25 @@ jobs:
           const js=fs.readdirSync('dist/assets').find(x=>x.endsWith('.js'));
           if(!js) throw new Error('No production JS bundle found');
           const bundle=fs.readFileSync('dist/assets/'+js,'utf8');
-          if(!bundle.includes('createRoot')) throw new Error('React entry not present in bundle');
+          for(const s of ['createRoot','localStorage','Lucky Spin','Tea Road']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
+          if(bundle.includes('ReferenceError: createRoot')) throw new Error('createRoot runtime error remains');
           console.log('Runtime smoke test passed:',js);
           NODE
-
       - name: Add runtime fallback
         run: |
           python - <<'PY'
           from pathlib import Path
           p=Path("dist/index.html")
           s=p.read_text(encoding="utf-8")
-          s=s.replace('<div id="root"></div>','<div id="root"><div id="tea-boot" style="min-height:100vh;display:grid;place-items:center;background:#07110d;color:#d8c69a;font:500 15px system-ui,sans-serif;text-align:center;padding:24px"><div><div style="font-size:30px;margin-bottom:12px">🍃</div><b style="font-size:22px">TEA ROAD</b><p style="opacity:.72">Загрузка чайного пути…</p></div></div></div><script>window.addEventListener("error",function(){var r=document.getElementById("root");if(r&&document.getElementById("tea-boot")){r.innerHTML="<div style=\"min-height:100vh;display:grid;place-items:center;background:#07110d;color:#fff;padding:24px;font:15px system-ui\"><div><b style=\"font-size:22px\">Tea Road</b><p>Не удалось запустить интерфейс. Обновите страницу.</p></div></div>"}});</script>')
+          s=s.replace('<div id="root"></div>','<div id="root"><div style="min-height:100vh;display:grid;place-items:center;background:#07110d;color:#d8c69a;font:500 15px system-ui,sans-serif">Загрузка TEA ROAD…</div></div>')
           p.write_text(s,encoding="utf-8")
           PY
-
       - name: Setup Pages
         uses: actions/configure-pages@v5
-
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: ./dist
-
   deploy:
     environment:
       name: github-pages
