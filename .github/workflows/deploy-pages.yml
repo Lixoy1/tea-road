@@ -24,6 +24,7 @@ jobs:
         run: |
           test -f src/main-v09.jsx
           test -f src/tea-road-v09.css
+          test -f public/tea-road-bg.svg
           grep -q 'react-dom/client' src/main-v09.jsx
           grep -q 'createRoot' src/main-v09.jsx
           grep -q 'main-v09.jsx' index.html
@@ -53,7 +54,7 @@ jobs:
           const js=fs.readdirSync('dist/assets').find(x=>x.endsWith('.js'));
           if(!js) throw new Error('No production JS bundle found');
           const bundle=fs.readFileSync('dist/assets/'+js,'utf8');
-          for(const s of ['createRoot','localStorage','start harvest','Tea Road','Telegram']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
+          for(const s of ['createRoot','localStorage','Start harvest','Tea Road','Telegram']) if(!bundle.includes(s)) throw new Error('Bundle missing '+s);
           if(bundle.includes('ReferenceError: createRoot')) throw new Error('createRoot runtime error remains');
           console.log('Tea Road v0.9 smoke test passed:',js);
           NODE
