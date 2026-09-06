@@ -21,6 +21,17 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      - name: Apply build compatibility fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          p = Path("src/main.jsx")
+          s = p.read_text(encoding="utf-8")
+          s = s.replace("History,Home,Languages,Leaf", "History,Home as HomeIcon,Languages,Leaf")
+          s = s.replace('["home","Главная",Home]', '["home","Главная",HomeIcon]')
+          p.write_text(s, encoding="utf-8")
+          PY
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
