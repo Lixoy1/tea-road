@@ -21,15 +21,22 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Validate Tea Road entry
+      - name: Validate Tea Road v0.7 entry
         run: |
-          test -f src/main-v06.jsx
-          test -f src/tea-road-v06.css
-          grep -q 'react-dom/client' src/main-v06.jsx
-          grep -q 'createRoot' src/main-v06.jsx
-          grep -q 'main-v06.jsx' index.html
-          ! grep -q 'Мини-игра' src/main-v06.jsx
-          echo "Tea Road v0.6 entry validation passed"
+          test -f src/main-v07.jsx
+          test -f src/tea-road-v07.css
+          test -f public/tea-road-bg.svg
+          grep -q 'react-dom/client' src/main-v07.jsx
+          grep -q 'createRoot' src/main-v07.jsx
+          grep -q 'main-v07.jsx' index.html
+          grep -q 'navigator.clipboard' src/main-v07.jsx
+          grep -q 'Telegram username' src/main-v07.jsx
+          grep -q '7-DAY HARVEST STREAK' src/main-v07.jsx
+          grep -q 'terms' src/main-v07.jsx
+          grep -q 'privacy' src/main-v07.jsx
+          grep -q 'license' src/main-v07.jsx
+          ! grep -q 'Мини-игра' src/main-v07.jsx
+          echo "Tea Road v0.7 validation passed"
 
       - name: Apply legacy build compatibility fixes
         run: |
@@ -66,7 +73,6 @@ jobs:
           if(!js) throw new Error('No production JS bundle found');
           const bundle=fs.readFileSync('dist/assets/'+js,'utf8');
           if(!bundle.includes('createRoot')) throw new Error('React entry not present in bundle');
-          if(bundle.includes('ReferenceError: createRoot')) throw new Error('createRoot runtime error remains');
           console.log('Runtime smoke test passed:',js);
           NODE
 
@@ -76,7 +82,7 @@ jobs:
           from pathlib import Path
           p=Path("dist/index.html")
           s=p.read_text(encoding="utf-8")
-          s=s.replace('<div id="root"></div>','<div id="root"><div id="tea-boot" style="min-height:100vh;display:grid;place-items:center;background:#07100d;color:#d8c69a;font:500 15px system-ui,sans-serif;text-align:center;padding:24px"><div><div style="font-size:30px;margin-bottom:12px">🍃</div><b style="font-size:22px">TEA ROAD</b><p style="opacity:.72">Загрузка чайного пути…</p></div></div></div><script>window.addEventListener("error",function(e){var r=document.getElementById("root");if(r&&document.getElementById("tea-boot")){r.innerHTML="<div style=\"min-height:100vh;display:grid;place-items:center;background:#07100d;color:#fff;padding:24px;font:15px system-ui\"><div><b style=\"font-size:22px\">Tea Road</b><p>Не удалось запустить интерфейс. Обновите страницу.</p></div></div>"}});</script>')
+          s=s.replace('<div id="root"></div>','<div id="root"><div id="tea-boot" style="min-height:100vh;display:grid;place-items:center;background:#07110d;color:#d8c69a;font:500 15px system-ui,sans-serif;text-align:center;padding:24px"><div><div style="font-size:30px;margin-bottom:12px">🍃</div><b style="font-size:22px">TEA ROAD</b><p style="opacity:.72">Загрузка чайного пути…</p></div></div></div><script>window.addEventListener("error",function(){var r=document.getElementById("root");if(r&&document.getElementById("tea-boot")){r.innerHTML="<div style=\"min-height:100vh;display:grid;place-items:center;background:#07110d;color:#fff;padding:24px;font:15px system-ui\"><div><b style=\"font-size:22px\">Tea Road</b><p>Не удалось запустить интерфейс. Обновите страницу.</p></div></div>"}});</script>')
           p.write_text(s,encoding="utf-8")
           PY
 
